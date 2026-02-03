@@ -3,7 +3,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { generateCelebrationAnimation } from '@/ai/flows/generate-celebration-animation';
 import { sendAgreedEmail } from './actions';
 import { SparkleOverlay } from '@/components/SparkleOverlay';
 import { Heart, Stars } from 'lucide-react';
@@ -11,7 +10,6 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function EternalFlamePage() {
   const [isCelebration, setIsCelebration] = useState(false);
-  const [animationUri, setAnimationUri] = useState<string | null>(null);
   const [noButtonPos, setNoButtonPos] = useState({ x: 0, y: 0 });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -19,41 +17,32 @@ export default function EternalFlamePage() {
   const cardRef = useRef<HTMLDivElement>(null);
 
   const moveNoButton = () => {
-    const maxX = window.innerWidth - 100;
-    const maxY = window.innerHeight - 50;
-    const newX = Math.random() * (maxX - 100);
-    const newY = Math.random() * (maxY - 100);
+    // Calculate bounds to keep button within viewport
+    const maxX = typeof window !== 'undefined' ? window.innerWidth - 100 : 500;
+    const maxY = typeof window !== 'undefined' ? window.innerHeight - 50 : 500;
+    
+    // Avoid putting it too close to the edges
+    const newX = Math.max(20, Math.random() * (maxX - 40));
+    const newY = Math.max(20, Math.random() * (maxY - 40));
+    
     setNoButtonPos({ x: newX, y: newY });
   };
 
   const handleYesClick = async () => {
     setIsLoading(true);
     try {
-      // Trigger Email
+      // Trigger Email (simulated server action)
       await sendAgreedEmail();
       
-      // Show intermediate loading state for AI
+      // Show the celebration
       setIsCelebration(true);
       
-      // Trigger GenAI Animation
-      const result = await generateCelebrationAnimation({
-        theme: 'romantic pink and red hearts with sparkling glitter',
-        text: 'Good girl'
-      });
-      
-      if (result.animationDataUri) {
-        setAnimationUri(result.animationDataUri);
-      }
-      
-      // Show for 5 seconds to let her enjoy it
+      // Auto-dismiss after a few seconds
       setTimeout(() => {
         setIsCelebration(false);
-        setAnimationUri(null);
-      }, 5000);
+      }, 8000);
 
     } catch (error) {
-      console.error('Action failed:', error);
-      setIsCelebration(false);
       toast({
         variant: "destructive",
         title: "Something went wrong",
@@ -65,34 +54,35 @@ export default function EternalFlamePage() {
   };
 
   useEffect(() => {
+    // Initialize position
     setNoButtonPos({ x: 0, y: 0 });
   }, []);
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-4 bg-background relative overflow-hidden">
+    <main className="min-h-screen flex items-center justify-center p-4 bg-background relative overflow-hidden selection:bg-primary/30">
       {/* Background decoration */}
-      <div className="absolute top-10 left-10 text-primary/20 animate-pulse">
+      <div className="absolute top-10 left-10 text-primary/10 animate-pulse pointer-events-none">
         <Heart size={120} fill="currentColor" />
       </div>
-      <div className="absolute bottom-10 right-10 text-primary/20 animate-pulse delay-1000">
+      <div className="absolute bottom-10 right-10 text-primary/10 animate-pulse delay-1000 pointer-events-none">
         <Heart size={180} fill="currentColor" />
       </div>
 
-      <Card ref={cardRef} className="max-w-md w-full shadow-2xl border-primary/20 bg-card/80 backdrop-blur-sm z-10 p-8 rounded-[2rem]">
+      <Card ref={cardRef} className="max-w-md w-full shadow-2xl border-primary/20 bg-white/40 backdrop-blur-md z-10 p-8 rounded-[3rem] border-2">
         <CardContent className="flex flex-col items-center text-center p-0">
-          <div className="mb-6 p-4 bg-primary/10 rounded-full">
-            <Heart className="text-primary w-12 h-12" fill="currentColor" />
+          <div className="mb-8 p-6 bg-primary/10 rounded-full animate-bounce">
+            <Heart className="text-primary w-16 h-16" fill="currentColor" />
           </div>
           
-          <h1 className="font-headline text-4xl md:text-5xl text-accent mb-8 leading-tight">
+          <h1 className="font-headline text-4xl md:text-5xl text-accent mb-12 leading-tight">
             Naisha, will you be my valentine?
           </h1>
 
-          <div className="flex items-center justify-center gap-8 w-full relative h-20">
+          <div className="flex items-center justify-center gap-12 w-full relative h-24">
             {/* YES Button */}
             <Button 
               size="lg"
-              className="font-headline text-2xl h-16 px-10 bg-primary hover:bg-primary/90 transition-transform active:scale-95 shadow-lg"
+              className="font-headline text-3xl h-20 px-12 bg-primary hover:bg-primary/90 transition-all hover:scale-110 active:scale-95 shadow-[0_10px_30px_rgba(255,105,180,0.4)] rounded-2xl"
               onClick={handleYesClick}
               disabled={isLoading}
             >
@@ -102,11 +92,12 @@ export default function EternalFlamePage() {
             {/* NO Button Container for Absolute Positioning */}
             <div 
               ref={noButtonRef}
-              className="transition-all duration-200"
+              className="transition-all duration-300 ease-out"
               style={{
                 position: noButtonPos.x === 0 && noButtonPos.y === 0 ? 'static' : 'fixed',
                 left: noButtonPos.x !== 0 ? `${noButtonPos.x}px` : 'auto',
                 top: noButtonPos.y !== 0 ? `${noButtonPos.y}px` : 'auto',
+                zIndex: 50
               }}
               onMouseEnter={moveNoButton}
               onTouchStart={(e) => {
@@ -117,7 +108,7 @@ export default function EternalFlamePage() {
               <Button 
                 variant="outline"
                 size="sm"
-                className="font-body text-base border-accent text-accent hover:bg-accent/5 pointer-events-auto shadow-sm"
+                className="font-body text-lg border-accent/30 text-accent/60 hover:bg-transparent cursor-default px-6 rounded-xl"
               >
                 NO
               </Button>
@@ -128,36 +119,37 @@ export default function EternalFlamePage() {
 
       {/* Celebratory Overlay */}
       {isCelebration && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-xl animate-in fade-in duration-500">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/95 backdrop-blur-xl animate-in fade-in duration-700">
           <SparkleOverlay />
-          <div className="text-center relative max-w-lg px-4">
-            {animationUri ? (
-              <div className="animate-in zoom-in duration-1000">
-                <img 
-                  src={animationUri} 
-                  alt="Celebration" 
-                  className="max-w-full h-auto rounded-3xl shadow-[0_0_50px_rgba(255,105,180,0.5)] mb-8 object-contain border-4 border-white"
-                />
-                <h2 className="font-headline text-6xl md:text-8xl text-accent animate-bounce drop-shadow-lg">
-                  Good girl
-                </h2>
+          <div className="text-center relative max-w-2xl px-4 animate-in zoom-in slide-in-from-bottom-10 duration-1000">
+            <div className="flex flex-col items-center">
+              <div className="relative mb-12">
+                <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 animate-pulse" />
+                <Heart size={200} className="text-primary relative animate-bounce" fill="currentColor" />
+                <Stars size={60} className="absolute -top-4 -right-4 text-accent animate-spin" />
               </div>
-            ) : (
-              <div className="flex flex-col items-center">
-                <div className="w-64 h-64 bg-primary/20 rounded-full flex items-center justify-center mb-8 animate-pulse">
-                  <Stars className="w-32 h-32 text-primary animate-spin" />
-                </div>
-                <p className="font-headline text-3xl text-primary animate-pulse">
-                  Creating your special moment...
-                </p>
-              </div>
-            )}
+              
+              <h2 className="font-headline text-7xl md:text-9xl text-accent drop-shadow-[0_5px_15px_rgba(0,0,0,0.1)] mb-4">
+                Good girl
+              </h2>
+              <p className="font-body text-2xl text-primary animate-pulse">
+                You've made me the happiest person!
+              </p>
+            </div>
+            
+            <Button 
+              variant="ghost" 
+              className="mt-12 text-muted-foreground hover:text-primary transition-colors"
+              onClick={() => setIsCelebration(false)}
+            >
+              Close
+            </Button>
           </div>
         </div>
       )}
 
-      <div className="absolute bottom-4 left-4 text-xs text-primary/40 font-body">
-        Eternal Flame © 2024
+      <div className="absolute bottom-6 left-6 text-sm text-primary/40 font-body">
+        Eternal Flame • Made for Naisha
       </div>
     </main>
   );
