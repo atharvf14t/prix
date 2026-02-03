@@ -2,7 +2,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Eternal Flame - Valentine Proposal',
+  title: 'Made for Naisha',
   description: 'A special valentine proposal for Naisha',
 };
 
