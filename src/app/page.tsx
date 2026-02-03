@@ -14,7 +14,6 @@ export default function EternalFlamePage() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const noButtonRef = useRef<HTMLDivElement>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
 
   const moveNoButton = () => {
     // Calculate bounds to keep button within viewport
@@ -34,19 +33,13 @@ export default function EternalFlamePage() {
       // Trigger Email (simulated server action)
       await sendAgreedEmail();
       
-      // Show the celebration
+      // Permanently switch to celebration mode
       setIsCelebration(true);
-      
-      // Auto-dismiss after a few seconds
-      setTimeout(() => {
-        setIsCelebration(false);
-      }, 8000);
-
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Something went wrong",
-        description: "Even the universe is overwhelmed by your beauty. Please try again!",
+        description: "Even the universe is overwhelmed. Please try again!",
       });
     } finally {
       setIsLoading(false);
@@ -58,6 +51,36 @@ export default function EternalFlamePage() {
     setNoButtonPos({ x: 0, y: 0 });
   }, []);
 
+  // If YES was pressed, render ONLY the celebration screen
+  if (isCelebration) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden animate-in fade-in duration-1000">
+        <SparkleOverlay />
+        <div className="text-center relative max-w-2xl px-4 animate-in zoom-in slide-in-from-bottom-10 duration-1000">
+          <div className="flex flex-col items-center">
+            <div className="relative mb-12">
+              <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 animate-pulse" />
+              <Heart size={200} className="text-primary relative animate-bounce" fill="currentColor" />
+              <Stars size={60} className="absolute -top-4 -right-4 text-accent animate-spin" />
+            </div>
+            
+            <h2 className="font-headline text-7xl md:text-9xl text-accent drop-shadow-[0_5px_15px_rgba(0,0,0,0.1)] mb-4">
+              Good girl
+            </h2>
+            <p className="font-body text-2xl text-primary animate-pulse">
+              You've made me the happiest person!
+            </p>
+          </div>
+        </div>
+
+        <div className="absolute bottom-6 left-6 text-sm text-primary/40 font-body">
+          Eternal Flame • For Naisha
+        </div>
+      </main>
+    );
+  }
+
+  // Otherwise, render the proposal screen
   return (
     <main className="min-h-screen flex items-center justify-center p-4 bg-background relative overflow-hidden selection:bg-primary/30">
       {/* Background decoration */}
@@ -68,7 +91,7 @@ export default function EternalFlamePage() {
         <Heart size={180} fill="currentColor" />
       </div>
 
-      <Card ref={cardRef} className="max-w-md w-full shadow-2xl border-primary/20 bg-white/40 backdrop-blur-md z-10 p-8 rounded-[3rem] border-2">
+      <Card className="max-w-md w-full shadow-2xl border-primary/20 bg-white/40 backdrop-blur-md z-10 p-8 rounded-[3rem] border-2">
         <CardContent className="flex flex-col items-center text-center p-0">
           <div className="mb-8 p-6 bg-primary/10 rounded-full animate-bounce">
             <Heart className="text-primary w-16 h-16" fill="currentColor" />
@@ -116,37 +139,6 @@ export default function EternalFlamePage() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Celebratory Overlay */}
-      {isCelebration && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/95 backdrop-blur-xl animate-in fade-in duration-700">
-          <SparkleOverlay />
-          <div className="text-center relative max-w-2xl px-4 animate-in zoom-in slide-in-from-bottom-10 duration-1000">
-            <div className="flex flex-col items-center">
-              <div className="relative mb-12">
-                <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 animate-pulse" />
-                <Heart size={200} className="text-primary relative animate-bounce" fill="currentColor" />
-                <Stars size={60} className="absolute -top-4 -right-4 text-accent animate-spin" />
-              </div>
-              
-              <h2 className="font-headline text-7xl md:text-9xl text-accent drop-shadow-[0_5px_15px_rgba(0,0,0,0.1)] mb-4">
-                Good girl
-              </h2>
-              <p className="font-body text-2xl text-primary animate-pulse">
-                You've made me the happiest person!
-              </p>
-            </div>
-            
-            <Button 
-              variant="ghost" 
-              className="mt-12 text-muted-foreground hover:text-primary transition-colors"
-              onClick={() => setIsCelebration(false)}
-            >
-              Close
-            </Button>
-          </div>
-        </div>
-      )}
 
       <div className="absolute bottom-6 left-6 text-sm text-primary/40 font-body">
         Eternal Flame • Made for Naisha
