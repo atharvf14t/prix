@@ -68,13 +68,13 @@ export default function EternalFlamePage() {
               Good girl
             </h2>
             <p className="font-body text-2xl text-primary animate-pulse">
-              You've made me the happiest person!
+              YAYAYYYYYY LESSSGOOOOO BABYDOLL MUAHHHHH 😚😚😚😚!
             </p>
           </div>
         </div>
 
         <div className="absolute bottom-6 left-6 text-sm text-primary/40 font-body">
-          Eternal Flame • For Naisha
+          Made For Naisha
         </div>
       </main>
     );
@@ -141,7 +141,7 @@ export default function EternalFlamePage() {
       </Card>
 
       <div className="absolute bottom-6 left-6 text-sm text-primary/40 font-body">
-        Eternal Flame • Made for Naisha
+        Made for Naisha
       </div>
     </main>
   );
