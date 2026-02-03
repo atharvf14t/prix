@@ -7,12 +7,14 @@ import { generateCelebrationAnimation } from '@/ai/flows/generate-celebration-an
 import { sendAgreedEmail } from './actions';
 import { SparkleOverlay } from '@/components/SparkleOverlay';
 import { Heart, Stars } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function EternalFlamePage() {
   const [isCelebration, setIsCelebration] = useState(false);
   const [animationUri, setAnimationUri] = useState<string | null>(null);
   const [noButtonPos, setNoButtonPos] = useState({ x: 0, y: 0 });
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
   const noButtonRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -30,9 +32,12 @@ export default function EternalFlamePage() {
       // Trigger Email
       await sendAgreedEmail();
       
+      // Show intermediate loading state for AI
+      setIsCelebration(true);
+      
       // Trigger GenAI Animation
       const result = await generateCelebrationAnimation({
-        theme: 'romantic valentine with sparkles and hearts',
+        theme: 'romantic pink and red hearts with sparkling glitter',
         text: 'Good girl'
       });
       
@@ -40,24 +45,26 @@ export default function EternalFlamePage() {
         setAnimationUri(result.animationDataUri);
       }
       
-      setIsCelebration(true);
-      
-      // Hide celebration after 2 seconds
+      // Show for 5 seconds to let her enjoy it
       setTimeout(() => {
         setIsCelebration(false);
         setAnimationUri(null);
-      }, 2000);
+      }, 5000);
 
     } catch (error) {
       console.error('Action failed:', error);
+      setIsCelebration(false);
+      toast({
+        variant: "destructive",
+        title: "Something went wrong",
+        description: "Even the universe is overwhelmed by your beauty. Please try again!",
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Initially position the No button relative to the parent or a fixed spot
   useEffect(() => {
-    // Start it near the Yes button but not exactly on top
     setNoButtonPos({ x: 0, y: 0 });
   }, []);
 
@@ -89,7 +96,7 @@ export default function EternalFlamePage() {
               onClick={handleYesClick}
               disabled={isLoading}
             >
-              YES
+              {isLoading ? 'Wait...' : 'YES'}
             </Button>
 
             {/* NO Button Container for Absolute Positioning */}
@@ -121,23 +128,30 @@ export default function EternalFlamePage() {
 
       {/* Celebratory Overlay */}
       {isCelebration && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-xl animate-in fade-in duration-500">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-xl animate-in fade-in duration-500">
           <SparkleOverlay />
-          <div className="text-center relative">
+          <div className="text-center relative max-w-lg px-4">
             {animationUri ? (
-              <img 
-                src={animationUri} 
-                alt="Celebration" 
-                className="max-w-full max-h-[80vh] rounded-2xl shadow-2xl mb-8 object-cover"
-              />
+              <div className="animate-in zoom-in duration-1000">
+                <img 
+                  src={animationUri} 
+                  alt="Celebration" 
+                  className="max-w-full h-auto rounded-3xl shadow-[0_0_50px_rgba(255,105,180,0.5)] mb-8 object-contain border-4 border-white"
+                />
+                <h2 className="font-headline text-6xl md:text-8xl text-accent animate-bounce drop-shadow-lg">
+                  Good girl
+                </h2>
+              </div>
             ) : (
-              <div className="w-96 h-96 bg-primary/20 rounded-2xl flex items-center justify-center mb-8">
-                <Stars className="w-24 h-24 text-primary animate-spin" />
+              <div className="flex flex-col items-center">
+                <div className="w-64 h-64 bg-primary/20 rounded-full flex items-center justify-center mb-8 animate-pulse">
+                  <Stars className="w-32 h-32 text-primary animate-spin" />
+                </div>
+                <p className="font-headline text-3xl text-primary animate-pulse">
+                  Creating your special moment...
+                </p>
               </div>
             )}
-            <h2 className="font-headline text-7xl text-accent animate-bounce">
-              Good girl
-            </h2>
           </div>
         </div>
       )}

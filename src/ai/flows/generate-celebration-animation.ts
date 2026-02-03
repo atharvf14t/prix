@@ -1,8 +1,8 @@
 'use server';
 /**
- * @fileOverview Generates a love-themed celebratory animation data URI.
+ * @fileOverview Generates a love-themed celebratory image data URI.
  *
- * - generateCelebrationAnimation - A function that generates the animation.
+ * - generateCelebrationAnimation - A function that generates the celebratory image.
  * - GenerateCelebrationAnimationInput - The input type for the generateCelebrationAnimation function.
  * - GenerateCelebrationAnimationOutput - The return type for the generateCelebrationAnimation function.
  */
@@ -11,8 +11,8 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateCelebrationAnimationInputSchema = z.object({
-  theme: z.string().describe('The theme for the background of the animation.'),
-  text: z.string().describe('The text to display during the animation.'),
+  theme: z.string().describe('The theme for the background of the image.'),
+  text: z.string().describe('The text to display in the image.'),
 });
 export type GenerateCelebrationAnimationInput = z.infer<
   typeof GenerateCelebrationAnimationInputSchema
@@ -22,26 +22,21 @@ const GenerateCelebrationAnimationOutputSchema = z.object({
   animationDataUri: z
     .string()
     .describe(
-      'The animation as a data URI that must include a MIME type and use Base64 encoding. Expected format: data:<mimetype>;base64,<encoded_data>.'
+      'The image as a data URI that must include a MIME type and use Base64 encoding. Expected format: data:<mimetype>;base64,<encoded_data>.'
     ),
 });
 export type GenerateCelebrationAnimationOutput = z.infer<
   typeof GenerateCelebrationAnimationOutputSchema
 >;
 
+/**
+ * Generates a celebratory image using AI.
+ */
 export async function generateCelebrationAnimation(
   input: GenerateCelebrationAnimationInput
 ): Promise<GenerateCelebrationAnimationOutput> {
   return generateCelebrationAnimationFlow(input);
 }
-
-const prompt = ai.definePrompt({
-  name: 'generateCelebrationAnimationPrompt',
-  input: {schema: GenerateCelebrationAnimationInputSchema},
-  output: {schema: GenerateCelebrationAnimationOutputSchema},
-  prompt: `Create a short, celebratory animation with a {{{theme}}} background and display the text "{{text}}" for two seconds.\n\nReturn the animation as a data URI.
-`,
-});
 
 const generateCelebrationAnimationFlow = ai.defineFlow(
   {
@@ -50,17 +45,19 @@ const generateCelebrationAnimationFlow = ai.defineFlow(
     outputSchema: GenerateCelebrationAnimationOutputSchema,
   },
   async input => {
-    // Here, instead of calling ai.generate, call the Veo model to generate a video
-    // of the appropriate theme and base64 encode the video and return as the animationDataUri
-    const {media} = await ai.generate({
-      model: 'googleai/imagen-4.0-fast-generate-001',
-      prompt: `Generate a short video with a ${input.theme} background and display the text "${input.text}" for two seconds.`,
+    // Using imagen-3.0-generate-001 as it's highly reliable for text-to-image with text
+    const response = await ai.generate({
+      model: 'googleai/imagen-3.0-generate-001',
+      prompt: `Generate a beautiful, romantic, and high-quality celebratory image for a Valentine proposal. 
+      Theme: ${input.theme}. 
+      The image MUST clearly display the text: "${input.text}".
+      The style should be elegant, warm, and festive.`,
     });
 
-    if (!media) {
-      throw new Error('No media returned from video generation.');
+    if (!response.media || !response.media.url) {
+      throw new Error('AI image generation failed to return media.');
     }
 
-    return {animationDataUri: media.url};
+    return {animationDataUri: response.media.url};
   }
 );
